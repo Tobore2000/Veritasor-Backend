@@ -27,6 +27,7 @@
     "pact:can-i-deploy": "tsx scripts/can-i-deploy.ts",
     "pact:test": "vitest run tests/pact/",
     "pact:publish": "tsx scripts/publish-pact.ts",
+    "pact:diff": "tsx scripts/pact-diff.ts",
     "notices:generate": "tsx scripts/generate-notices.ts --output docs/legal/NOTICES.md",
     "notices:check": "tsx scripts/generate-notices.ts --check --output docs/legal/NOTICES.md"
   },

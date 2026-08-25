@@ -171,6 +171,12 @@ Pact contracts are published to the broker from the main-branch security workflo
 npm run pact:publish
 ```
 
+Pull requests run the Pact contract test and upload the generated contract. A trusted follow-up workflow compares it with the base contract and updates a single PR comment with added, removed, changed, and renamed interactions. Removed or changed interactions are breaking; a breaking PR must carry the `breaking-change` label or the report workflow fails. The diff can also be generated locally:
+
+```bash
+npm run pact:diff -- --base old-pact.json --head new-pact.json
+```
+
 **What is fuzz-tested:**
 
 | Scenario | Property | Expected outcome |
