@@ -1,0 +1,38 @@
+name: Pact contract diff
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    name: Generate head Pact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pull request
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Generate Pact artifact
+        run: npx vitest run tests/pact/contract.spec.ts --reporter=dot
+
+      - name: Upload head Pact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pact-head-${{ github.event.pull_request.number }}
+          path: tests/pacts/Veritasor-Frontend-Veritasor-Backend.json
+          if-no-files-found: error
