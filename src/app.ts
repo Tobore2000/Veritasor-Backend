@@ -52,7 +52,6 @@ import {
 import {
   startPgBouncerScraperIfNeeded,
 } from "./services/pgbouncerScraper.js";
-import { startAuditLogListener } from "./services/audit/auditLogEvents.js";
 
 /** Active SPIFFE SVID provider when mTLS uses the Workload API. */
 let activeSvidProvider: SvidProvider | undefined;
@@ -209,12 +208,8 @@ export async function startServer(port: number): Promise<Server | HttpsServer> {
   // Start StatsD dual-write when enabled (opt-in, default off).
   startStatsdDualWriteIfEnabled();
 
-  // Receive audit events emitted by other application instances.
-  await startAuditLogListener();
-
   const application = createApp(readinessReport);
   const { attachAttestationStream } = await import("./ws/attestationStream.js");
-  const { attachAdminGraphqlStream } = await import("./ws/adminGraphqlStream.js");
 
   return new Promise(async (resolve) => {
     let server: Server | HttpsServer;
@@ -278,6 +273,5 @@ export async function startServer(port: number): Promise<Server | HttpsServer> {
       resolve(server);
     });
     attachAttestationStream(server);
-    attachAdminGraphqlStream(server);
   });
 }

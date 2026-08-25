@@ -1,7 +1,6 @@
 import { createSchema as makeExecutableSchema } from 'graphql-yoga';
 import * as userRepository from '../../repositories/userRepository.js';
 import * as auditLogRepository from '../../repositories/auditLogRepository.js';
-import { createAuditLogAsyncIterator } from '../../services/audit/auditLogEvents.js';
 
 export const userSchema = makeExecutableSchema({
   typeDefs: `
@@ -30,7 +29,6 @@ export const userSchema = makeExecutableSchema({
       resource: String!
       resourceId: String
       metadata: JSON
-      tenantId: String
       timestamp: DateTime!
       actor: User
     }
@@ -40,10 +38,6 @@ export const userSchema = makeExecutableSchema({
       user(id: ID!): User
       auditLogs: [AuditLog!]!
       auditLog(id: ID!): AuditLog
-    }
-
-    type Subscription {
-      auditLogStream(tenantId: ID): AuditLog!
     }
   `,
   resolvers: {
@@ -57,18 +51,6 @@ export const userSchema = makeExecutableSchema({
       auditLog: async (_: unknown, { id }: { id: string }) => {
         const logs = await auditLogRepository.getAllAuditLogs();
         return logs.find(l => l.id === id) || null;
-      },
-    },
-    Subscription: {
-      auditLogStream: {
-        subscribe: (_: unknown, { tenantId }: { tenantId?: string }, context: { user: { role?: string; tenantId?: string } }) => {
-          const requestedTenant = tenantId ?? context.user.tenantId;
-          if (context.user.role !== 'admin' && requestedTenant !== context.user.tenantId) {
-            throw new Error('Tenant filter is outside the authenticated scope');
-          }
-          return createAuditLogAsyncIterator(requestedTenant);
-        },
-        resolve: (event: unknown) => event,
       },
     },
     User: {
