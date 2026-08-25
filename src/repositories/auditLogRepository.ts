@@ -44,6 +44,7 @@
 import crypto, { randomBytes } from 'node:crypto'
 import { decodeCursor, encodeCursor } from '../utils/pagination.js'
 import { computePayloadHash } from '../services/webhooks/deadLetterQueue.js'
+import { notifyAuditLog, publishAuditLog } from '../services/audit/auditLogEvents.js'
 
 // ---------------------------------------------------------------------------
 // Chain constants
@@ -63,6 +64,7 @@ export const GENESIS_SENTINEL = '00000000000000000000000000000000000000000000000
 export interface AuditLog {
   id: string
   userId: string
+  tenantId?: string
   action: string
   resource: string
   resourceId?: string
@@ -205,6 +207,8 @@ export async function createAuditLog(
 
   const newLog: AuditLog = { ...partial, chainHash }
   auditLogs.push(newLog)
+  publishAuditLog(newLog)
+  await notifyAuditLog(newLog)
   return newLog
 }
 
